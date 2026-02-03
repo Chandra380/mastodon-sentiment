@@ -1,0 +1,67 @@
+# Mastodon Sentiment Analysis - Docker Compose
+# Phase 1: Kafka + data volumes (we'll add Airflow, Spark, etc. as we build)
+
+services:
+  # =============================================================================
+  # Kafka (KRaft mode - no Zookeeper needed)
+  # =============================================================================
+  kafka:
+    image: bitnami/kafka:3.6
+    container_name: mastodon-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft mode config (no Zookeeper needed)
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      # Host (localhost:9092) + containers (kafka:9092) - Bitnami uses KAFKA_CFG_ prefix
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - mastodon-net
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =============================================================================
+  # Kafka UI (optional - helps visualize topics and messages during dev)
+  # =============================================================================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: mastodon-kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - mastodon-net
+
+  # =============================================================================
+  # Future services (uncomment as we build them):
+  # =============================================================================
+  #
+  # airflow:
+  #   image: apache/airflow:2.7.3
+  #   ...
+  #
+  # spark:
+  #   image: bitnami/spark:3.5
+  #   ...
+  #
+
+volumes:
+  kafka_data:
+    driver: local
+
+networks:
+  mastodon-net:
+    driver: bridge

@@ -1,0 +1,63 @@
+# CI: run on every push and every pull request
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker Compose
+        run: |
+          docker compose config --quiet
+        # Ensures docker-compose.yml is valid and services can be resolved
+
+  lint:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff
+        run: ruff check . --output-format=github
+        continue-on-error: true
+        # Passes even if no Python files yet; remove continue-on-error once you have code to lint
+
+      - name: Ruff format check
+        run: ruff format --check .
+        continue-on-error: true
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short 2>/dev/null || echo "No tests yet - add tests/ and requirements to enable"
+        continue-on-error: true

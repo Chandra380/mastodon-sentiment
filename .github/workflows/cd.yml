@@ -1,0 +1,25 @@
+# CD: runs on push to main (e.g. after merge). Extend with build/deploy steps.
+name: CD
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  build-validate:
+    name: Build & validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+
+      # Add when you have images to build, e.g.:
+      # - name: Build producer image
+      #   run: docker compose build producers
+      # - name: Push to registry (optional)
+      #   if: github.ref == 'refs/heads/main'
+      #   run: ...
+      #   env:
+      #     REGISTRY: ghcr.io

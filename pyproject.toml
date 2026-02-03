@@ -1,0 +1,20 @@
+# Mastodon Sentiment - Python tooling and (future) package config
+[project]
+name = "mastodon-sentiment"
+version = "0.1.0"
+description = "Real-time Mastodon sentiment pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+exclude = ["venv", ".venv", "dbt", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
