@@ -37,7 +37,7 @@ mastodon-sentiment/
 
 1. Copy `.env.example` to `.env`. For the producer you’ll need Mastodon credentials — see [docs/MASTODON_CREDENTIALS.md](docs/MASTODON_CREDENTIALS.md).
 2. Run `docker-compose up -d`
-3. See **[PROJECT_ROADMAP.md](PROJECT_ROADMAP.md)** for the full step-by-step build (production-style). Next up: **Step 2 — Mastodon → Kafka producer**.
+3. See **[PROJECT_ROADMAP.md](docs/PROJECT_ROADMAP.md)** for the full step-by-step build (production-style). Next up: **Step 2 — Mastodon → Kafka producer**.
 
 **Pushing to GitHub:** [docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md) — one-time repo creation, remote, and CI/CD (GitHub Actions).
 
