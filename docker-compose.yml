@@ -2,31 +2,38 @@
 # Phase 1: Kafka + data volumes (we'll add Airflow, Spark, etc. as we build)
 
 services:
-  # =============================================================================
-  # Kafka (KRaft mode - no Zookeeper needed)
-  # =============================================================================
-  kafka:
-    image: bitnami/kafka:3.6
-    container_name: mastodon-kafka
-    ports:
-      - "9092:9092"
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: mastodon-zookeeper
     environment:
-      # KRaft mode config (no Zookeeper needed)
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      # Host (localhost:9092) + containers (kafka:9092) - Bitnami uses KAFKA_CFG_ prefix
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-    volumes:
-      - kafka_data:/bitnami/kafka
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - mastodon-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: mastodon-kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"    # internal/plaintext
+      - "29092:29092"  # host access
+    depends_on:
+      - zookeeper
     networks:
       - mastodon-net
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
-
   # =============================================================================
   # Kafka UI (optional - helps visualize topics and messages during dev)
   # =============================================================================
@@ -34,7 +41,7 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: mastodon-kafka-ui
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
