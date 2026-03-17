@@ -49,4 +49,4 @@ Thumbs.db
 logs/
 
 #miscellaneous
-tmp/
+tmp/*
