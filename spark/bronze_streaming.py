@@ -19,7 +19,7 @@ def load_config() -> Dict[str, str]:
     load_dotenv()
     broker = os.getenv("KAFKA_BROKER", "localhost:29092")
     topic = os.getenv("KAFKA_TOPIC", "mastodon-posts")
-    bronze_path = os.getenv("BRONZE_PARQUET_PATH", "data/bronze/parquet")
+    bronze_path = os.getenv("BRONZE_PARQUET_PATH", "data/bronze")
     checkpoint_path = os.getenv(
         "BRONZE_CHECKPOINT_PATH", "data/checkpoints/bronze_streaming"
     )
@@ -42,17 +42,12 @@ def build_spark() -> SparkSession:
         SparkSession.builder.appName("mastodon-bronze-stream")
         .master("local[*]")
         .config("spark.sql.shuffle.partitions", "4")
-        .config("spark.driver.memory", "2g")
-        .config("spark.executor.memory", "2g")
         .config(
             "spark.jars.packages",
             "org.apache.spark:spark-sql-kafka-0-10_2.13:4.1.1",
         )
         # Force Hadoop to use Java-based IO on Windows
         .config("spark.hadoop.io.native.lib.available", "false")
-        .config("spark.hadoop.fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem")
-        .config("spark.hadoop.fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem")
-        .config("spark.local.dir", "tmp")
         .getOrCreate()
     )
 
@@ -126,7 +121,7 @@ def main() -> None:
     cfg = load_config()
     spark = build_spark()
 
-    spark.sparkContext.setLogLevel("INFO")
+    spark.sparkContext.setLogLevel(os.getenv("SPARK_LOG_LEVEL", "WARN"))
 
     df = (
         spark.readStream.format("kafka")
