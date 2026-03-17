@@ -2,3 +2,7 @@ requests>=2.32.0
 kafka-python>=2.0.2
 python-dotenv>=1.0.1
 pyspark>=3.5.0
+vaderSentiment>=3.3.2
+pyarrow>=14.0.0
+pandas>=2.0.0
+duckdb>=1.1.0
