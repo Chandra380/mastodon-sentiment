@@ -6,10 +6,12 @@
 # Data (don't commit raw/processed data)
 data/bronze/*
 data/silver/*
+data/silver_enriched/*
 data/gold/*
 data/checkpoints/*
 !data/bronze/.gitkeep
 !data/silver/.gitkeep
+!data/silver_enriched/.gitkeep
 !data/gold/.gitkeep
 !data/checkpoints/.gitkeep
 
