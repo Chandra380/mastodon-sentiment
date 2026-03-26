@@ -25,7 +25,6 @@ mastodon-sentiment/
 │   ├── silver/
 │   └── gold/
 ├── docker-compose.yml
-├── dbt/                  # dbt project (transformations)
 ├── airflow/              # Airflow DAGs (orchestration)
 ├── spark/                # Spark streaming jobs
 ├── producers/            # Mastodon → Kafka producer
